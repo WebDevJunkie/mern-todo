@@ -1,14 +1,82 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const Todo = require('../models/Todo');
 const router = express.Router();
 
-router.get('/', (req, res) => res.send('Get All TODOS'));
+router.get('/', async (req, res) => {
+    const todos = await Todo.find();
+    res.json(todos);
+});
 
-router.get('/:id', (req, res) => res.send('Get Single TODO'));
+router.get('/:id', async (req, res) => {
+    try {
+        const validId = mongoose.Types.ObjectId.isValid(req.params.id);
 
-router.post('/', (req, res) => res.send('Create TODO'));
+        if (!validId)
+            return res.status(404).send('Todo not found');
 
-router.put('/:id', (req, res) => res.send('Update TODO'));
+        const todo = await Todo.findById(req.params.id);
 
-router.delete('/:id', (req, res) => res.send('Delete TODO'));
+        if (!todo)
+            return res.status(404).send('Todo not found');
+
+        res.json(todo);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+router.post('/', async (req, res) => {
+    try {
+        const todo = new Todo({ title: req.body.title, description: req.body.description });
+        await todo.save();
+        res.send(todo);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server Error');   
+    }
+});
+
+router.put('/:id', async (req, res) => {
+    try {
+        const validId = mongoose.Types.ObjectId.isValid(req.params.id);
+
+        if (!validId)
+            return res.status(404).send('Todo not found');
+
+        const todo = await Todo.findById(req.params.id);
+
+        if (!todo)
+            return res.status(404).send('Todo not found');
+
+        await Todo.findByIdAndUpdate(req.params.id, req.body);
+        const returnTodo = await Todo.findById(req.params.id);
+        res.json(returnTodo);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+router.delete('/:id', async (req, res) => {
+    try {
+        const validId = mongoose.Types.ObjectId.isValid(req.params.id);
+
+        if (!validId)
+            return res.status(404).send('Todo not found');
+
+        const todo = await Todo.findById(req.params.id);
+
+        if (!todo)
+            return res.status(404).send('Todo not found');
+
+        await todo.delete();
+        res.send('Todo deleted');
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server Error');
+    }
+});
 
 module.exports = router;

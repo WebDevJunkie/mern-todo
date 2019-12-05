@@ -6,6 +6,8 @@ connectDb();
 
 const app = express();
 
+app.use(express.json());
+
 app.use('/todos', todoRouter);
 
 app.get('/test', (req, res) => res.json({ msg: 'Test Passed' }));
