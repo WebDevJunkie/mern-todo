@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
-const { dbConnectionString } = require('./config');
+var dbConnectionString;
+if (require.resolve('./config')) {
+    dbConnectionString = require('./config').dbConnectionString;
+} else {
+    dbConnectionString = process.env.DBCONNECTIONSTRING;
+}
 
 const connectDb = () => {
     mongoose.connect(dbConnectionString, {
